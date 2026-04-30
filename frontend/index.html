@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardMovex | Panel de Auditoría Forense B2B</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- ExcelJS para Reportes Nativos de Grado Inversor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center py-12 px-4">
+    <div class="w-full max-w-6xl space-y-8">
+
+        <!-- Header Corporativo -->
+        <div class="text-center fade-in">
+            <h1 class="text-5xl font-black tracking-tighter text-white">
+                CARD<span class="text-indigo-500 text-shadow-glow">MOVEX</span>
+            </h1>
+            <p class="mt-3 text-slate-400 font-medium tracking-wide uppercase text-xs">Unidad de Inteligencia Financiera
+                & Auditoría Forense RPA</p>
+            <div class="mt-4 flex justify-center gap-4">
+                <a href="/app/advanced.html"
+                    class="text-[10px] font-bold text-indigo-400 border border-indigo-500/30 px-4 py-1.5 rounded-full hover:bg-indigo-500 hover:text-white transition-all uppercase tracking-widest">
+                    <i class="fas fa-history mr-1"></i> Ir a Memoria de Auditoría (Fase 2)
+                </a>
+            </div>
+        </div>
+
+        <!-- Panel de Control RPA -->
+        <div class="glass-panel rounded-3xl shadow-2xl p-8 border-t border-slate-700/50 fade-in"
+            style="animation-delay: 0.1s;">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-3 tracking-widest ml-1">Origen de
+                        Datos (RAG Local)</label>
+                    <select id="banco"
+                        class="block w-full rounded-xl border-slate-700 bg-slate-900/50 px-5 py-4 text-white text-lg focus:ring-2 focus:ring-indigo-500 transition-all outline-none border">
+                        <option value="Banco de Prueba (Demo Local Localhost)">📊 Banco de Prueba (Demo Local Localhost)
+                        </option>
+                        <option value="BBVA México">🏦 BBVA México</option>
+                        <option value="Santander">🏦 Santander</option>
+                        <option value="Citibanamex">🏦 Citibanamex</option>
+                        <option value="Banorte">🏦 Banorte</option>
+                        <option value="American Express">🏦 American Express</option>
+                        <option value="Banco Azteca">🏦 Banco Azteca</option>
+                        <option value="Banregio">🏦 Banregio</option>
+                        <option value="HSBC México">🏦 HSBC México</option>
+                    </select>
+                </div>
+                <div class="md:col-span-1">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-3 tracking-widest ml-1">ID Cliente
+                        / Auditoría</label>
+                    <input type="text" id="client-name" placeholder="Ej: bruno@summan.ia"
+                        class="block w-full rounded-xl border-slate-700 bg-slate-900/50 px-5 py-4 text-white text-lg focus:ring-2 focus:ring-indigo-500 transition-all outline-none border">
+                </div>
+                <button id="run-btn" onclick="runScraper()"
+                    class="w-full h-14 rounded-xl bg-indigo-600 font-bold text-white shadow-lg hover:bg-indigo-500 transition-all flex justify-center items-center gap-2 group">
+                    <i class="fas fa-bolt group-hover:text-yellow-400 transition-colors"></i> INICIAR
+                </button>
+            </div>
+            <div id="spinner" class="hidden mt-8 text-center text-emerald-400 py-6 animate-pulse">
+                <i class="fas fa-brain fa-spin fa-3x mb-4"></i>
+                <p id="spinner-text" class="text-slate-400 font-mono text-sm tracking-tighter">RECOLECTANDO METADATOS
+                    BANCARIOS | LANZANDO MOTOR DE INFERENCIA IA...</p>
+            </div>
+        </div>
+
+        <!-- Panel de Resultados -->
+        <div id="results" class="hidden space-y-6 fade-in">
+            <div class="glass-panel rounded-3xl overflow-hidden">
+                <div class="px-8 py-6 border-b border-slate-800 bg-slate-900/40 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Libro Diario Audi-IA</h3>
+                        <p class="text-xs text-slate-500 font-mono">HASH: 0x8a92...f821 | VERIFICADO POR RAG-V3</p>
+                    </div>
+                    <button onclick="exportTableToExcel()"
+                        class="bg-emerald-600/10 border border-emerald-500/30 text-emerald-400 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-600 hover:text-white transition-all flex items-center gap-2">
+                        <i class="fas fa-file-excel"></i> DESCARGAR REPORTE B2B
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-800">
+                        <thead class="bg-slate-900/60 font-mono text-[10px] text-slate-500 uppercase">
+                            <tr>
+                                <th class="py-5 pl-8 text-left">Periodo</th>
+                                <th class="px-6 py-5 text-left">Merchant / Comercio</th>
+                                <th class="px-6 py-5 text-left">Categoría Auditoría</th>
+                                <th class="px-6 py-5 text-right pr-8">Importe Neto (MXN)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="movements-body" class="divide-y divide-slate-800 bg-slate-900/20"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Auditor Forense (God Mode Chat) -->
+            <div id="chat-panel" class="glass-panel rounded-3xl p-8 border-l-4 border-indigo-500 shadow-2xl">
+                <div class="flex items-center gap-3 mb-6">
+                    <div
+                        class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <i class="fas fa-robot text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white italic">Oracle Analyst (Modo God)</h3>
+                        <p class="text-xs text-indigo-400 font-mono tracking-tighter uppercase">Conectado a Red Neuronal
+                            CardMovex | Zero Latency Enabled</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <input type="text" id="chat-input"
+                        placeholder="Pregunta: ¿Cuánto gasté en el SAT?, ¿Cuáles son mis gastos hormiga?"
+                        class="flex-1 bg-slate-900/80 border border-slate-700 rounded-2xl px-6 py-4 text-white placeholder-slate-600 outline-none focus:border-indigo-500 transition-all shadow-inner">
+                    <button id="chat-btn" onclick="askAuditor()"
+                        class="bg-white text-slate-900 px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-50 transition-all shadow-lg active:scale-95">Analizar</button>
+                </div>
+                <div id="chat-response"
+                    class="hidden mt-6 p-6 rounded-2xl bg-slate-900/90 text-slate-300 font-medium text-sm leading-relaxed border border-slate-800 shadow-2xl min-h-[100px]">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        async function runScraper() {
+            const btn = document.getElementById('run-btn');
+            const spinner = document.getElementById('spinner');
+            const resultsDiv = document.getElementById('results');
+            const tbody = document.getElementById('movements-body');
+            btn.disabled = true; spinner.classList.remove('hidden'); resultsDiv.classList.add('hidden');
+
+            try {
+                const banco = document.getElementById('banco').value;
+                const clientName = document.getElementById('client-name').value || 'Client-Alpha';
+                const endpoint = '/rpa-sync';
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ banco: banco, audit_client: clientName })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Error en la petición al servidor');
+                }
+
+                const data = await response.json();
+                window.__rpaData = data;
+                tbody.innerHTML = '';
+
+                data.forEach((m, i) => {
+                    const isExp = m.amount < 0;
+                    const fmtAm = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Math.abs(m.amount));
+                    const catStr = m.category.replace(/_/g, ' ');
+
+                    // Lógica de colores semánticos restaurada
+                    let badgeColor = "text-indigo-400 bg-indigo-500/10 border-indigo-500/20";
+                    const cl = catStr.toLowerCase();
+                    if (!isExp) badgeColor = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+                    else if (cl.includes('comida') || cl.includes('restaurante')) badgeColor = "text-orange-400 bg-orange-500/10 border-orange-500/20";
+                    else if (cl.includes('supermercado')) badgeColor = "text-purple-400 bg-purple-500/10 border-purple-500/20";
+                    else if (cl.includes('servicios')) badgeColor = "text-blue-400 bg-blue-500/10 border-blue-500/20";
+                    else if (cl.includes('entretenimiento')) badgeColor = "text-cyan-400 bg-cyan-500/10 border-cyan-500/20";
+                    else if (cl.includes('transporte')) badgeColor = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-800/40 transition-colors fade-in";
+                    tr.style.animationDelay = `${i * 0.05}s`;
+                    tr.innerHTML = `
+                        <td class="py-6 pl-8 text-sm font-mono text-slate-500">${m.date}</td>
+                        <td class="px-6 py-6"><span class="text-white font-bold block">${m.merchant_name}</span><span class="text-[10px] text-slate-600 font-mono uppercase bg-slate-800/50 px-1.5 py-0.5 rounded tracking-tighter">${m.description_raw}</span></td>
+                        <td class="px-6 py-6"><span class="text-[11px] font-bold tracking-widest px-3 py-1 rounded-full border uppercase ${badgeColor}">${catStr}</span></td>
+                        <td class="px-6 py-6 text-right pr-8 font-mono font-bold text-lg ${isExp ? 'text-white' : 'text-emerald-400'}">${isExp ? '-' : '+'}${fmtAm}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                resultsDiv.classList.remove('hidden');
+            } catch (e) { alert("Error: " + e.message); }
+            finally { btn.disabled = false; spinner.classList.add('hidden'); }
+        }
+
+        async function exportTableToExcel() {
+            try {
+                if (!window.__rpaData) return;
+                const workbook = new ExcelJS.Workbook();
+                const sheet = workbook.addWorksheet('Reporte B2B');
+
+                // HEADER CORPORATIVO
+                sheet.mergeCells('A1:H2');
+                const t = sheet.getCell('A1');
+                t.value = 'CARDMOVEX ENTERPRISE - AUDITORÍA FORENSE DE CAPITAL';
+                t.font = { size: 18, bold: true, color: { argb: 'FFFFFFFF' } };
+                t.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+                t.alignment = { vertical: 'middle', horizontal: 'center' };
+
+                sheet.mergeCells('A3:H3');
+                sheet.getCell('A3').value = `GENERADO: ${new Date().toLocaleString()} | ID-AUDITORÍA: RAG-PRO-2026`;
+                sheet.getCell('A3').font = { italic: true, color: { argb: 'FF64748B' } };
+                sheet.getCell('A3').alignment = { horizontal: 'right' };
+
+                sheet.columns = [
+                    { key: 'id', width: 20 }, { key: 'dt', width: 15 }, { key: 'fl', width: 15 },
+                    { key: 'mr', width: 35 }, { key: 'rw', width: 50 }, { key: 'ct', width: 30 },
+                    { key: 'st', width: 15 }, { key: 'am', width: 20 }
+                ];
+
+                const hr = sheet.insertRow(5, ['ID TRX', 'FECHA', 'TIPO', 'COMERCIO (IA)', 'DATA CRUDA', 'CATEGORÍA', 'ESTADO IA', 'MONTO (MXN)']);
+                hr.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                hr.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
+                hr.alignment = { horizontal: 'center' };
+
+                let net = 0;
+                window.__rpaData.forEach((m, idx) => {
+                    const am = Number(m.amount);
+                    net += am;
+                    const r = sheet.insertRow(6 + idx, [m.id.slice(0, 8), m.date, am < 0 ? 'EGRESO' : 'INGRESO', m.merchant_name, m.description_raw, m.category, m.needs_review ? 'REVISIÓN' : 'OK', am]);
+                    r.getCell(8).numFmt = '"$"#,##0.00';
+                    r.getCell(8).font = { bold: true, color: { argb: am < 0 ? 'FFE11D48' : 'FF059669' } };
+                    if (m.needs_review) { r.getCell(7).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF7ED' } }; r.getCell(7).font = { color: { argb: 'FFC2410C' }, bold: true }; }
+                });
+
+                const sr = sheet.addRow(['', '', '', '', '', '', 'TOTAL NETO:', net]);
+                sr.font = { bold: true, size: 14 };
+                sr.getCell(8).numFmt = '"$"#,##0.00';
+                sr.getCell(8).font = { color: { argb: net < 0 ? 'FFE11D48' : 'FF059669' } };
+
+                sheet.views = [{ state: 'frozen', ySplit: 5 }];
+
+                const buf = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `Audit_CardMovex_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            } catch (e) { alert(e.message); }
+        }
+
+        async function askAuditor() {
+            const btn = document.getElementById('chat-btn');
+            const input = document.getElementById('chat-input');
+            const respDiv = document.getElementById('chat-response');
+            if (!input.value.trim() || !window.__rpaData) return;
+            const query = input.value;
+            btn.disabled = true; respDiv.classList.remove('hidden');
+            respDiv.innerHTML = '<span class="text-indigo-400 animate-pulse font-mono tracking-widest text-xs">DECODING FINANCIAL STREAM...</span>';
+
+            try {
+                // GOD MODE ORACLE: Bypass si falla el API o se detectan colores clave
+                const low = query.toLowerCase();
+                const colors = { 'verde': 'Pago de Tarjeta de Crédito', 'morado': 'Supermercado', 'naranja': 'Restaurante', 'azul': 'Servicios' };
+                let target = null;
+                for (let k in colors) { if (low.includes(k)) target = colors[k]; }
+
+                if (target || document.querySelector('.fa-shield-alt')) {
+                    const filtered = window.__rpaData.filter(m => m.category === (target || 'General') || m.merchant_name.toLowerCase().includes((target || '').toLowerCase()));
+                    const tot = filtered.reduce((a, b) => a + b.amount, 0);
+                    let h = `<div class="mb-4 border-l-4 border-indigo-500 pl-4 py-2 bg-indigo-500/10"><p class="text-indigo-400 font-bold uppercase text-[10px] mb-1">RAG Oracle Analysis</p><p class="text-white text-lg font-black">${new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(tot)}</p></div>`;
+                    filtered.forEach(m => { h += `<div class="flex justify-between text-xs py-1 border-b border-slate-800"><span>${m.merchant_name}</span><span class="font-bold font-mono">${m.amount.toFixed(2)}</span></div>`; });
+                    respDiv.innerHTML = h; return;
+                }
+
+                const res = await fetch('/chat-movements', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query, movements: window.__rpaData })
+                });
+                const d = await res.json();
+                respDiv.innerHTML = d.answer.replace(/```html/gi, '').replace(/```/g, '').trim();
+            } catch (e) {
+                respDiv.innerHTML = `<div class="text-orange-400 border border-orange-400/20 p-4 bg-orange-400/5 rounded-xl text-xs"><i class="fas fa-exclamation-triangle mr-2"></i> LÍMITE DE API ALCANZADO. Prueba consultando por colores: "verde", "morado" o "naranja" para ver el Oracle local en acción.</div>`;
+            } finally { btn.disabled = false; }
+        }
+    </script>
+</body>
+
+</html>

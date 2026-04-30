@@ -15,12 +15,21 @@ class Settings(BaseSettings):
     # === OpenAI ===
     OPENAI_API_KEY: str  # Requerido: falla al iniciar si no está definido en .env
 
+    # === Gemini (Fallback) ===
+    GEMINI_API_KEY: str | None = None
+
+
     # === Motor de IA ===
     DEFAULT_LLM_MODEL: str = "gpt-4o-mini"
 
     # === Sistema de Autonomía ===
     # Movimientos con score menor a este threshold → needs_review = True
     CONFIDENCE_THRESHOLD: float = 0.85
+
+    # === Belvo API ===
+    BELVO_SECRET_ID: str
+    BELVO_SECRET_PASSWORD: str
+    BELVO_ENVIRONMENT: str = "sandbox"
 
 # Singleton de configuración: se importa en toda la app con `from config.settings import settings`
 settings = Settings()

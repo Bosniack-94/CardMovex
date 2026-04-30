@@ -1,20 +1,24 @@
 # === Web Framework ===
-fastapi==0.115.6
-uvicorn[standard]==0.34.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
 
 # === Validación y Configuración ===
-pydantic==2.10.6
-pydantic-settings==2.8.1
+pydantic>=2.10.0
+pydantic-settings>=2.8.0
 
 # === IA y OpenAI ===
-openai==1.68.2
+openai>=1.68.0
+google-generativeai>=0.8.0
 
 # === Resiliencia ===
-tenacity==9.0.0
+
+tenacity>=9.0.0
 
 # === Utilidades ===
-python-dotenv==1.1.0
+python-dotenv>=1.0.0
 
 # === Observabilidad ===
-structlog==25.1.0
+structlog>=25.1.0
 
+# === HTTP Client (Belvo API) ===
+httpx>=0.28.0
